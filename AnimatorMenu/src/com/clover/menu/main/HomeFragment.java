@@ -35,6 +35,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.clover.menu.R;
 import com.clover.menu.view.CenterImageView;
@@ -95,7 +96,6 @@ public class HomeFragment extends Fragment implements OnClickListener{
 	 */
 	private ViewPagerAD mViewPager;
 	/**
-	 * {@link #mViewPager}动画开始和结束Y坐标，用于上下滑动列表时，{@link #mViewPager}在Y方向加载translate动画
 	 * begin and end coordinate of {@link #mViewPager} animation. when scroll up an down {@link #mListView}, 
 	 * {@link #mViewPager} load translate animation in the y direction.
 	 */
@@ -105,8 +105,6 @@ public class HomeFragment extends Fragment implements OnClickListener{
 	 * search box
 	 */
 	private View mLayoutSearch;
-	
-	
 	
 	/**
 	 * frame layout, it contains {@link #mMenuParentView}, {@link #blankView}, {@link #mViewPager}
@@ -253,7 +251,7 @@ public class HomeFragment extends Fragment implements OnClickListener{
 		mListView.addHeaderView(mListHeaderView);
 		List<String> list = new ArrayList<String>();
 		for (int i = 0; i < 20; i++) {
-			if(i == 0) list.add("scroll listview or touch move menu parent view " ); 
+			if(i == 0) list.add("scroll listview or touch move menu view " ); 
 			else list.add("Item " + i);
 			
 		}
@@ -289,10 +287,8 @@ public class HomeFragment extends Fragment implements OnClickListener{
 					
 					
 					int tempHeight =  (int) ((mViewPagerBeginY - mViewPagerEndY )/ 2);
-					System.out.println("scrollHeight---= "+ scrollHeight + "---tempHeight--= " + tempHeight);
 					if (scrollHeight < tempHeight) {//distance of scroll up is small, revert previous location, menus is expanded.
 						mExpandFlag = true;
-//						reverseTranslationYAnim();
 						mListView.postDelayed(new Runnable() {
 							
 							@Override
@@ -353,34 +349,41 @@ public class HomeFragment extends Fragment implements OnClickListener{
 					moveHorizontalFlag = false;
 					break;
 				case MotionEvent.ACTION_MOVE:
-						
-					if(lastY - event.getY() > 15){ // move up
-						moveFlag  = true;
-						if (!moveHorizontalFlag) {
-							mExpandFlag = false;
-							mListView.smoothScrollBy( (int) (listScrollOffset), 500);
+						if (moveHorizontalFlag) {
+							if((event.getX() - lastX) > 15){// move right
+								moveFlag  = true;
+								moveToLeftFlag = false;
+								moveHorizontalFlag = true;
+								if(mExpandFlag){
+									updateMoveRightAnim((long)((event.getX() - lastX) / ( imageEBeginX - imageABeginX)  * mDuration ));
+								}
+							}else if((lastX - event.getX()) >15){// move left
+								moveFlag = true;
+								moveToLeftFlag = true;
+								moveHorizontalFlag = true;
+								if(mExpandFlag){
+									updateMoveLeftAnim((long)((Math.abs(event.getX() - lastX)) / ( imageEBeginX - imageABeginX)  * mDuration ));
+								}
+							}
+						}else{
+							if(lastY - event.getY() > 15){ // move up
+								moveFlag  = true;
+								if (!moveHorizontalFlag) {
+									if (mExpandFlag) {
+										mExpandFlag = false;
+										mListView.smoothScrollBy( (int) (listScrollOffset), 500);
+									}
+								}
+							}else if(event.getY() - lastY  > 15){ // move down
+								moveFlag  = true;
+								if (!moveHorizontalFlag) {
+									mExpandFlag = true;
+									mListView.smoothScrollToPositionFromTop(0, 0,  200);
+								}
+							}else {
+								if(Math.abs((event.getX() - lastX)) > 15) moveHorizontalFlag = true;
+							}
 						}
-					}else if(event.getY() - lastY  > 15){ // move down
-						moveFlag  = true;
-						if (!moveHorizontalFlag) {
-							mExpandFlag = true;
-							mListView.smoothScrollToPositionFromTop(0, 0,  200);
-						}
-					}else {
-						if((event.getX() - lastX) > 15){// move right
-							moveFlag  = true;
-							moveToLeftFlag = false;
-							moveHorizontalFlag = true;
-							if(mExpandFlag)
-							updateMoveRightAnim((long)((event.getX() - lastX) / ( imageEBeginX - imageABeginX)  * mDuration ));
-						}else if((lastX - event.getX()) >15){// move left
-							moveFlag = true;
-							moveToLeftFlag = true;
-							moveHorizontalFlag = true;
-							updateMoveLeftAnim((long)((Math.abs(event.getX() - lastX)) / ( imageEBeginX - imageABeginX)  * mDuration ));
-						}
-					}
-					
 					
 					break;
 				case MotionEvent.ACTION_UP:
@@ -398,7 +401,7 @@ public class HomeFragment extends Fragment implements OnClickListener{
 						}
 				}else if(moveHorizontalFlag){
 					if (moveToLeftFlag) {
-						finishMoveToLeftAnim();
+						finishMoveLeftAnim();
 					}else{
 						finishMoveRightAnim();
 					}
@@ -582,15 +585,22 @@ public class HomeFragment extends Fragment implements OnClickListener{
 	
 	@Override
 	public void onClick(View v) {
-		switch (v.getId()) {
-		case R.id.img_a:
-		case R.id.img_b:
-		case R.id.img_c:
-		case R.id.img_d:
-		case R.id.img_e:
-//			moveToRightAnim();
+		MenuLayout menuLayout = (MenuLayout) v;
+		switch (menuLayout.getIndexLable()) {
+		case 0:
 			moveLeftAnim2();
-//			moveLeftAnim(2);
+			break;
+		case 1:
+			moveRightAnim2();
+			break;
+		case 2:
+			moveRightAnim();
+			break;
+		case 3:
+			Toast.makeText(getActivity(), menuLayout.getTextView().getText(), Toast.LENGTH_SHORT).show();
+			break;
+		case 4:
+			moveLeftAnim();
 			break;
 		default:
 			break;
@@ -686,6 +696,115 @@ public class HomeFragment extends Fragment implements OnClickListener{
 		
 	}
 	
+	
+	/**
+	 * move right twice
+	 */
+	public void moveRightAnim2(){
+		PropertyValuesHolder imageA_translate_x = PropertyValuesHolder.ofFloat("x", endCoordinateXs[imageE.getIndexLable()]);
+	    PropertyValuesHolder imageA_translate_y = PropertyValuesHolder.ofFloat("y", endCoordinateYs[imageE.getIndexLable()]);
+	    ObjectAnimator imageAAnimator = null; 
+		if (imageA.getIndexLable()  == 3) {
+			PropertyValuesHolder imageA_scale_x = PropertyValuesHolder.ofFloat("scaleX", 1);
+		    PropertyValuesHolder imageA_scale_y = PropertyValuesHolder.ofFloat("scaleY", 1);
+		    imageAAnimator =  ObjectAnimator.ofPropertyValuesHolder(imageA, imageA_translate_x, imageA_translate_y, imageA_scale_x, imageA_scale_y);
+		}else if(imageA.getIndexLable() == 2){
+			PropertyValuesHolder imageA_scale_x = PropertyValuesHolder.ofFloat("scaleX", mScaleValue);
+		    PropertyValuesHolder imageA_scale_y = PropertyValuesHolder.ofFloat("scaleY", mScaleValue);
+		    imageAAnimator =  ObjectAnimator.ofPropertyValuesHolder(imageA, imageA_translate_x, imageA_translate_y, imageA_scale_x, imageA_scale_y);
+		}else{
+			imageAAnimator =  ObjectAnimator.ofPropertyValuesHolder(imageA, imageA_translate_x, imageA_translate_y);
+		}
+		
+		
+		PropertyValuesHolder imageB_translate_x = PropertyValuesHolder.ofFloat("x" , endCoordinateXs[imageA.getIndexLable()]);
+	    PropertyValuesHolder imageB_translate_y = PropertyValuesHolder.ofFloat("y", endCoordinateYs[imageA.getIndexLable()]);
+	    ObjectAnimator imageBAnimator = null; 
+		if (imageB.getIndexLable() == 3) {
+			PropertyValuesHolder imageB_scale_x = PropertyValuesHolder.ofFloat("scaleX", 1);
+		    PropertyValuesHolder imageB_scale_y = PropertyValuesHolder.ofFloat("scaleY", 1);
+		    imageBAnimator =  ObjectAnimator.ofPropertyValuesHolder(imageB, imageB_translate_x, imageB_translate_y, imageB_scale_x, imageB_scale_y);
+		}else if(imageB.getIndexLable() == 2){
+			PropertyValuesHolder imageB_scale_x = PropertyValuesHolder.ofFloat("scaleX", mScaleValue);
+		    PropertyValuesHolder imageB_scale_y = PropertyValuesHolder.ofFloat("scaleY", mScaleValue);
+		    imageBAnimator =  ObjectAnimator.ofPropertyValuesHolder(imageB, imageB_translate_x, imageB_translate_y, imageB_scale_x, imageB_scale_y);
+		}else{
+			imageBAnimator =  ObjectAnimator.ofPropertyValuesHolder(imageB, imageB_translate_x, imageB_translate_y);
+		}
+		
+		PropertyValuesHolder imageC_translate_x = PropertyValuesHolder.ofFloat("x", endCoordinateXs[imageB.getIndexLable()]);
+	    PropertyValuesHolder imageC_translate_y = PropertyValuesHolder.ofFloat("y", endCoordinateYs[imageB.getIndexLable()]);
+	    ObjectAnimator imageCAnimator = null; 
+		if (imageC.getIndexLable()  == 3) {
+			PropertyValuesHolder imageC_scale_x = PropertyValuesHolder.ofFloat("scaleX", 1);
+		    PropertyValuesHolder imageC_scale_y = PropertyValuesHolder.ofFloat("scaleY", 1);
+		    imageCAnimator =  ObjectAnimator.ofPropertyValuesHolder(imageC, imageC_translate_x, imageC_translate_y, imageC_scale_x, imageC_scale_y);
+		}else if(imageC.getIndexLable()  == 2){
+			PropertyValuesHolder imageC_scale_x = PropertyValuesHolder.ofFloat("scaleX", mScaleValue);
+		    PropertyValuesHolder imageC_scale_y = PropertyValuesHolder.ofFloat("scaleY", mScaleValue);
+		    imageCAnimator =  ObjectAnimator.ofPropertyValuesHolder(imageC, imageC_translate_x, imageC_translate_y, imageC_scale_x, imageC_scale_y);
+		}else{
+			imageCAnimator =  ObjectAnimator.ofPropertyValuesHolder(imageC, imageC_translate_x, imageC_translate_y);
+		}
+		
+		PropertyValuesHolder imageD_translate_x = PropertyValuesHolder.ofFloat("x" ,endCoordinateXs[imageC.getIndexLable()]);
+	    PropertyValuesHolder imageD_translate_y = PropertyValuesHolder.ofFloat("y",endCoordinateYs[imageC.getIndexLable()]);
+	    ObjectAnimator imageDAnimator = null; 
+		if (imageD.getIndexLable() == 3) {
+			PropertyValuesHolder imageD_scale_x = PropertyValuesHolder.ofFloat("scaleX", 1);
+		    PropertyValuesHolder imageD_scale_y = PropertyValuesHolder.ofFloat("scaleY", 1);
+		    imageDAnimator =  ObjectAnimator.ofPropertyValuesHolder(imageD, imageD_translate_x, imageD_translate_y, imageD_scale_x, imageD_scale_y);
+		}else if(imageD.getIndexLable()  == 2){
+			PropertyValuesHolder imageD_scale_x = PropertyValuesHolder.ofFloat("scaleX", mScaleValue);
+		    PropertyValuesHolder imageD_scale_y = PropertyValuesHolder.ofFloat("scaleY", mScaleValue);
+		    imageDAnimator =  ObjectAnimator.ofPropertyValuesHolder(imageD, imageD_translate_x, imageD_translate_y, imageD_scale_x, imageD_scale_y);
+		}else{
+			imageDAnimator =  ObjectAnimator.ofPropertyValuesHolder(imageD, imageD_translate_x, imageD_translate_y);
+		}
+		
+		PropertyValuesHolder imageE_translate_x = PropertyValuesHolder.ofFloat("x", endCoordinateXs[imageD.getIndexLable()]);
+	    PropertyValuesHolder imageE_translate_y = PropertyValuesHolder.ofFloat("y", endCoordinateYs[imageD.getIndexLable()]);
+	    ObjectAnimator imageEAnimator = null; 
+		if (imageE.getIndexLable() == 3) {
+			PropertyValuesHolder imageE_scale_x = PropertyValuesHolder.ofFloat("scaleX", 1);
+		    PropertyValuesHolder imageE_scale_y = PropertyValuesHolder.ofFloat("scaleY", 1);
+		    imageEAnimator =  ObjectAnimator.ofPropertyValuesHolder(imageE, imageE_translate_x, imageE_translate_y, imageE_scale_x, imageE_scale_y);
+		}else if(imageE.getIndexLable()  == 2){
+			PropertyValuesHolder imageE_scale_x = PropertyValuesHolder.ofFloat("scaleX", mScaleValue);
+		    PropertyValuesHolder imageE_scale_y = PropertyValuesHolder.ofFloat("scaleY", mScaleValue);
+		    imageEAnimator =  ObjectAnimator.ofPropertyValuesHolder(imageE, imageE_translate_x, imageE_translate_y, imageE_scale_x, imageE_scale_y);
+		}else{
+			imageEAnimator =  ObjectAnimator.ofPropertyValuesHolder(imageE, imageE_translate_x, imageE_translate_y);
+		}
+		
+		setRightIndex();
+		AnimatorSet set = new AnimatorSet();
+		set.setDuration(mDuration);
+		set.playTogether(imageAAnimator, imageBAnimator, imageCAnimator, imageDAnimator, imageEAnimator);
+		set.start();
+		
+		set.addListener(new AnimatorListener() {
+			
+			@Override
+			public void onAnimationStart(Animator animation) {
+			}
+			
+			@Override
+			public void onAnimationRepeat(Animator animation) {
+			}
+			
+			@Override
+			public void onAnimationEnd(Animator animation) {
+				
+				moveRightAnim();
+			}
+			
+			@Override
+			public void onAnimationCancel(Animator animation) {
+				
+			}
+		});
+	}
 	private  ObjectAnimator imageAAnimToRight ; 
 	private  ObjectAnimator imageBAnimToRight ; 
 	private ObjectAnimator imageCAnimToRight ; 
@@ -693,7 +812,7 @@ public class HomeFragment extends Fragment implements OnClickListener{
 	private  ObjectAnimator imageEAnimToRight ; 
 	
 	/**
-	 * 向右滑动时，初始化动画
+	 * when move right, init animation
 	 */
 	public void initMoveRightAnim(){
 		
@@ -778,10 +897,12 @@ public class HomeFragment extends Fragment implements OnClickListener{
 	}
 	
 	/**
-	 * 向右滑动时，手指抬起释放，结束动画
+	 * when move right, finger move up, finish animation
 	 */
 	public void finishMoveRightAnim(){
-		
+		if (!mExpandFlag) {
+			return ;
+		}
 		ObjectAnimator imageAAnimator = null;
 		PropertyValuesHolder imageA_translate_x = PropertyValuesHolder.ofFloat("x",  endCoordinateXs[imageE.getIndexLable()]);
 	    PropertyValuesHolder imageA_translate_y = PropertyValuesHolder.ofFloat("y", endCoordinateYs[imageE.getIndexLable()]);
@@ -868,6 +989,9 @@ public class HomeFragment extends Fragment implements OnClickListener{
 		
 	}
 
+	/**
+	 * when move right, update mIndexLable value of {@link MenuLayout}
+	 */
 	private void setRightIndex() {
 		imageA.setIndexLable(imageA.getIndexLable() + 1);
 		imageB.setIndexLable(imageB.getIndexLable() + 1);
@@ -879,7 +1003,7 @@ public class HomeFragment extends Fragment implements OnClickListener{
 	}
 	
 	/**
-	 * 向右滑动，更新动画进度
+	 * when move right, update animation progress
 	 * @param playTime
 	 */
 	public void updateMoveRightAnim(long playTime){
@@ -979,6 +1103,9 @@ public class HomeFragment extends Fragment implements OnClickListener{
 		
 	}
 
+	/**
+	 * when move left, update mIndexLable value of {@link MenuLayout}
+	 */
 	private void setLeftIndex() {
 		imageA.setIndexLable(imageA.getIndexLable() - 1);
 		imageB.setIndexLable(imageB.getIndexLable() - 1);
@@ -989,7 +1116,7 @@ public class HomeFragment extends Fragment implements OnClickListener{
 	}
 	
 	/**
-	 * 移动两次 
+	 * move left twice
 	 */
 	public void moveLeftAnim2(){
 		PropertyValuesHolder imageA_translate_x = PropertyValuesHolder.ofFloat("x", endCoordinateXs[imageB.getIndexLable()]);
@@ -1078,14 +1205,10 @@ public class HomeFragment extends Fragment implements OnClickListener{
 			
 			@Override
 			public void onAnimationStart(Animator animation) {
-				// TODO Auto-generated method stub
-				
 			}
 			
 			@Override
 			public void onAnimationRepeat(Animator animation) {
-				// TODO Auto-generated method stub
-				
 			}
 			
 			@Override
@@ -1108,7 +1231,7 @@ public class HomeFragment extends Fragment implements OnClickListener{
 	private ObjectAnimator imageEAnimToLeft ; 
 
 	/**
-	 * 向左滑动时，初始化动画
+	 * when move left, init animation
 	 */
 	public void initMoveLeftAnim(){
 		PropertyValuesHolder imageA_translate_x = PropertyValuesHolder.ofFloat("x", endCoordinateXs[imageA.getIndexLable()], endCoordinateXs[imageB.getIndexLable()]);
@@ -1192,7 +1315,7 @@ public class HomeFragment extends Fragment implements OnClickListener{
 	}
 	
 	/**
-	 * 向左滑动，更新动画进度
+	 * when move left, update animation progress
 	 * @param playTime
 	 */
 	private void updateMoveLeftAnim(long playTime){
@@ -1208,10 +1331,12 @@ public class HomeFragment extends Fragment implements OnClickListener{
 	
 	
 	/**
-	 * 向左滑动时，手指抬起释放，结束动画
+	 * when move left, finger move up, finish animation
 	 */
-	public void finishMoveToLeftAnim(){
-		
+	public void finishMoveLeftAnim(){
+		if (!mExpandFlag) {
+			return;
+		}
 		ObjectAnimator imageAAnimator = null;
 		PropertyValuesHolder imageA_translate_x = PropertyValuesHolder.ofFloat("x",  endCoordinateXs[imageB.getIndexLable()]);
 	    PropertyValuesHolder imageA_translate_y = PropertyValuesHolder.ofFloat("y", endCoordinateYs[imageB.getIndexLable()]);
@@ -1306,10 +1431,9 @@ public class HomeFragment extends Fragment implements OnClickListener{
 	
 	
 	private ObjectAnimator viewPagerTranslationYAnim ; 
-//	private ObjectAnimator menuParentTranslationYAnim ; 
 	private ObjectAnimator layoutFrameTranslationYAnim ; 
 	/**
-	 * 上下滑动列表时，初始化滑动动画
+	 *  when scroll {@link #mListView} up and down, init animation
 	 */
 	public void initTranslationYAnim(){
 		
@@ -1378,210 +1502,26 @@ public class HomeFragment extends Fragment implements OnClickListener{
 		imageETranslationYAnim.setInterpolator(new LinearInterpolator());
 		
 		
-//		layoutAnim = ObjectAnimator.ofFloat(headerLayout, "y", y1, -headerHeight).setDuration(duration);
-//		layoutAnim = ObjectAnimator.ofFloat(headerLayout, "y",/*headerLayout.getY()*/y1, -imageABeginY + imageA.getMeasuredHeight()).setDuration(duration);
-//		layoutAnim = ObjectAnimator.ofFloat(headerLayout, "y",/*headerLayout.getY()*/y1, layoutSearchBottom).setDuration(duration);
-//		layoutAnim.setInterpolator(new LinearInterpolator());
-//		menuParentTranslationYAnim = ObjectAnimator.ofFloat(mMenuParentView, "y",/*headerLayout.getY()*/mMenuParentBeginY, mLayoutSearchBottom).setDuration(mDuration);
-//		menuParentTranslationYAnim.setInterpolator(new LinearInterpolator());
 		layoutFrameTranslationYAnim = ObjectAnimator.ofFloat(mLayoutFrame, "y",/*headerLayout.getY()*/layoutFrameBeginY, layoutFrameEndY).setDuration(mDuration);
 		layoutFrameTranslationYAnim.setInterpolator(new LinearInterpolator());
 		
-//		mViewPagerEndY = mLayoutSearchBottom + imageA.getMeasuredHeight();
 		viewPagerTranslationYAnim = ObjectAnimator.ofFloat(mViewPager, "y", mViewPagerBeginY , mViewPagerEndY).setDuration(mDuration);
 		viewPagerTranslationYAnim.setInterpolator(new LinearInterpolator());
 	}
 	
 	/**
-	 * 上下滑动列表，更新动画进度
+	 * when scroll {@link #mListView} up and down, update animation progress
 	 * @param playTime
 	 */
 	public void updateTranslationYAnim(long playTime){
-		System.out.println("---updateTranslationYAnim---");
-//		mLayoutSearch.bringToFront();
 		imageCircleAnim.setCurrentPlayTime(playTime);
 		imageATranslationYAnim.setCurrentPlayTime(playTime);
 		imageBTranslationYAnim.setCurrentPlayTime(playTime); 
 		imageCTranslationYAnim.setCurrentPlayTime(playTime);
 		imageDTranslationYAnim.setCurrentPlayTime(playTime);
 		imageETranslationYAnim.setCurrentPlayTime(playTime);
-//		layoutAnim.setCurrentPlayTime(playTime);
-//		menuParentTranslationYAnim.setCurrentPlayTime(playTime);
 		layoutFrameTranslationYAnim.setCurrentPlayTime(playTime);
 		viewPagerTranslationYAnim.setCurrentPlayTime(playTime );
 	}
 	
-	
-	/**
-	 * 上下滑动列表，滑动距离小于{@value #mListViewHeaderHeight}的1/2高度，手指释放，动画结束。菜单处于折合状态.
-	 */
-	public void FinishTranslationYAnim(){
-		
-		PropertyValuesHolder imageA_translate_x = PropertyValuesHolder.ofFloat("x", beginCoordinateXs[imageA.getIndexLable()]);
-	    PropertyValuesHolder imageA_translate_y = PropertyValuesHolder.ofFloat("y", beginCoordinateYs[imageA.getIndexLable()]);
-	   
-		if (imageA.getIndexLable()  == 3) {
-			PropertyValuesHolder imageA_scale_x = PropertyValuesHolder.ofFloat("scaleX",  1);
-		    PropertyValuesHolder imageA_scale_y = PropertyValuesHolder.ofFloat("scaleY", 1);
-		    imageATranslationYAnim =  ObjectAnimator.ofPropertyValuesHolder(imageA, imageA_translate_x, imageA_translate_y, imageA_scale_x, imageA_scale_y);
-		}else{
-			imageATranslationYAnim =  ObjectAnimator.ofPropertyValuesHolder(imageA, imageA_translate_x, imageA_translate_y);
-		}
-//		imageAScrollAnim.setDuration(duration);
-		imageATranslationYAnim.setInterpolator(new LinearInterpolator());
-		
-		
-		PropertyValuesHolder imageB_translate_x = PropertyValuesHolder.ofFloat("x", beginCoordinateXs[imageB.getIndexLable()]);
-	    PropertyValuesHolder imageB_translate_y = PropertyValuesHolder.ofFloat("y",beginCoordinateYs[imageB.getIndexLable()]);
-	   
-		if (imageB.getIndexLable()  == 3) {
-			PropertyValuesHolder imageB_scale_x = PropertyValuesHolder.ofFloat("scaleX", 1);
-		    PropertyValuesHolder imageB_scale_y = PropertyValuesHolder.ofFloat("scaleY", 1);
-		    imageBTranslationYAnim =  ObjectAnimator.ofPropertyValuesHolder(imageB, imageB_translate_x, imageB_translate_y, imageB_scale_x, imageB_scale_y);
-		}else{
-			imageBTranslationYAnim =  ObjectAnimator.ofPropertyValuesHolder(imageB, imageB_translate_x, imageB_translate_y);
-		}
-//		imageBScrollAnim.setDuration(duration);
-		imageBTranslationYAnim.setInterpolator(new LinearInterpolator());
-		
-		PropertyValuesHolder imageC_translate_x = PropertyValuesHolder.ofFloat("x", beginCoordinateXs[imageC.getIndexLable()]);
-	    PropertyValuesHolder imageC_translate_y = PropertyValuesHolder.ofFloat("y", beginCoordinateYs[imageC.getIndexLable()]);
-		if (imageC.getIndexLable() == 3) {
-			PropertyValuesHolder imageC_scale_x = PropertyValuesHolder.ofFloat("scaleX", 1);
-		    PropertyValuesHolder imageC_scale_y = PropertyValuesHolder.ofFloat("scaleY", 1);
-		    imageCTranslationYAnim =  ObjectAnimator.ofPropertyValuesHolder(imageC, imageC_translate_x, imageC_translate_y, imageC_scale_x, imageC_scale_y);
-		}else{
-			imageCTranslationYAnim =  ObjectAnimator.ofPropertyValuesHolder(imageC, imageC_translate_x, imageC_translate_y);
-		}
-//		imageCScrollAnim.setDuration(duration);
-		imageCTranslationYAnim.setInterpolator(new LinearInterpolator());
-		
-		PropertyValuesHolder imageD_translate_x = PropertyValuesHolder.ofFloat("x" , beginCoordinateXs[imageD.getIndexLable()]);
-	    PropertyValuesHolder imageD_translate_y = PropertyValuesHolder.ofFloat("y", beginCoordinateYs[imageD.getIndexLable()]);
-		if (imageD.getIndexLable()  == 3) {
-			PropertyValuesHolder imageD_scale_x = PropertyValuesHolder.ofFloat("scaleX",1);
-		    PropertyValuesHolder imageD_scale_y = PropertyValuesHolder.ofFloat("scaleY", 1);
-		    imageDTranslationYAnim =  ObjectAnimator.ofPropertyValuesHolder(imageD, imageD_translate_x, imageD_translate_y, imageD_scale_x, imageD_scale_y);
-		}else{
-			imageDTranslationYAnim =  ObjectAnimator.ofPropertyValuesHolder(imageD, imageD_translate_x, imageD_translate_y);
-		}
-//		imageDScrollAnim.setDuration(duration);
-		imageDTranslationYAnim.setInterpolator(new LinearInterpolator());
-		
-		PropertyValuesHolder imageE_translate_x = PropertyValuesHolder.ofFloat("x", beginCoordinateXs[imageE.getIndexLable()]);
-	    PropertyValuesHolder imageE_translate_y = PropertyValuesHolder.ofFloat("y", beginCoordinateYs[imageE.getIndexLable()]);
-	   
-		if (imageE.getIndexLable()  == 3) {
-			PropertyValuesHolder imageE_scale_x = PropertyValuesHolder.ofFloat("scaleX", 1);
-		    PropertyValuesHolder imageE_scale_y = PropertyValuesHolder.ofFloat("scaleY", 1);
-		    imageETranslationYAnim =  ObjectAnimator.ofPropertyValuesHolder(imageE, imageE_translate_x, imageE_translate_y, imageE_scale_x, imageE_scale_y);
-		}else{
-			imageETranslationYAnim =  ObjectAnimator.ofPropertyValuesHolder(imageE, imageE_translate_x, imageE_translate_y);
-		}
-//		imageEScrollAnim.setDuration(duration);
-		imageETranslationYAnim.setInterpolator(new LinearInterpolator());
-		
-		
-//		layoutAnim = ObjectAnimator.ofFloat(headerLayout, "y", 0);
-//		layoutAnim.setInterpolator(new LinearInterpolator());
-//		menuParentTranslationYAnim = ObjectAnimator.ofFloat(mMenuParentView, "y", mLayoutSearchBottom);
-//		menuParentTranslationYAnim.setInterpolator(new LinearInterpolator());
-		layoutFrameTranslationYAnim = ObjectAnimator.ofFloat(mLayoutFrame, "y", layoutFrameEndY);
-		layoutFrameTranslationYAnim.setInterpolator(new LinearInterpolator());
-		
-		viewPagerTranslationYAnim  = ObjectAnimator.ofFloat(mViewPager, "y", mViewPagerEndY);
-		viewPagerTranslationYAnim.setInterpolator(new LinearInterpolator());
-		AnimatorSet set = new AnimatorSet();
-		set.playTogether(imageATranslationYAnim, imageBTranslationYAnim, imageCTranslationYAnim, imageDTranslationYAnim, imageETranslationYAnim,layoutFrameTranslationYAnim, viewPagerTranslationYAnim);
-		set.setDuration(mDuration);
-		set.start();
-	}
-	
-	
-	/**
-	 * 上下滑动列表，滑动距离小于{@value #mListViewHeaderHeight}的1/2高度，手指释放，动画恢复到初始状态。菜单处于展开状态。
-	 */
-	public void reverseTranslationYAnim(){
-		
-		PropertyValuesHolder imageA_translate_x = PropertyValuesHolder.ofFloat("x", endCoordinateXs[imageA.getIndexLable()]);
-	    PropertyValuesHolder imageA_translate_y = PropertyValuesHolder.ofFloat("y", endCoordinateYs[imageA.getIndexLable()]);
-	   
-		if (imageA.getIndexLable()  == 3) {
-			PropertyValuesHolder imageA_scale_x = PropertyValuesHolder.ofFloat("scaleX", mScaleValue);
-		    PropertyValuesHolder imageA_scale_y = PropertyValuesHolder.ofFloat("scaleY",mScaleValue);
-		    imageATranslationYAnim =  ObjectAnimator.ofPropertyValuesHolder(imageA, imageA_translate_x, imageA_translate_y, imageA_scale_x, imageA_scale_y);
-		}else{
-			imageATranslationYAnim =  ObjectAnimator.ofPropertyValuesHolder(imageA, imageA_translate_x, imageA_translate_y);
-		}
-//		imageAScrollAnim.setDuration(duration);
-		imageATranslationYAnim.setInterpolator(new LinearInterpolator());
-		
-		
-		PropertyValuesHolder imageB_translate_x = PropertyValuesHolder.ofFloat("x",endCoordinateXs[imageB.getIndexLable()]);
-	    PropertyValuesHolder imageB_translate_y = PropertyValuesHolder.ofFloat("y", endCoordinateYs[imageB.getIndexLable()]);
-	   
-		if (imageB.getIndexLable()  == 3) {
-			PropertyValuesHolder imageB_scale_x = PropertyValuesHolder.ofFloat("scaleX",mScaleValue);
-		    PropertyValuesHolder imageB_scale_y = PropertyValuesHolder.ofFloat("scaleY",mScaleValue);
-		    imageBTranslationYAnim =  ObjectAnimator.ofPropertyValuesHolder(imageB, imageB_translate_x, imageB_translate_y, imageB_scale_x, imageB_scale_y);
-		}else{
-			imageBTranslationYAnim =  ObjectAnimator.ofPropertyValuesHolder(imageB, imageB_translate_x, imageB_translate_y);
-		}
-//		imageBScrollAnim.setDuration(duration);
-		imageBTranslationYAnim.setInterpolator(new LinearInterpolator());
-		
-		PropertyValuesHolder imageC_translate_x = PropertyValuesHolder.ofFloat("x", endCoordinateXs[imageC.getIndexLable()]);
-	    PropertyValuesHolder imageC_translate_y = PropertyValuesHolder.ofFloat("y",endCoordinateYs[imageC.getIndexLable()]);
-		if (imageC.getIndexLable() == 3) {
-			PropertyValuesHolder imageC_scale_x = PropertyValuesHolder.ofFloat("scaleX",mScaleValue);
-		    PropertyValuesHolder imageC_scale_y = PropertyValuesHolder.ofFloat("scaleY",mScaleValue);
-		    imageCTranslationYAnim =  ObjectAnimator.ofPropertyValuesHolder(imageC, imageC_translate_x, imageC_translate_y, imageC_scale_x, imageC_scale_y);
-		}else{
-			imageCTranslationYAnim =  ObjectAnimator.ofPropertyValuesHolder(imageC, imageC_translate_x, imageC_translate_y);
-		}
-//		imageCScrollAnim.setDuration(duration);
-		imageCTranslationYAnim.setInterpolator(new LinearInterpolator());
-		
-		PropertyValuesHolder imageD_translate_x = PropertyValuesHolder.ofFloat("x" , endCoordinateXs[imageD.getIndexLable()]);
-	    PropertyValuesHolder imageD_translate_y = PropertyValuesHolder.ofFloat("y", endCoordinateYs[imageD.getIndexLable()]);
-		if (imageD.getIndexLable()  == 3) {
-			PropertyValuesHolder imageD_scale_x = PropertyValuesHolder.ofFloat("scaleX",mScaleValue);
-		    PropertyValuesHolder imageD_scale_y = PropertyValuesHolder.ofFloat("scaleY",mScaleValue);
-		    imageDTranslationYAnim =  ObjectAnimator.ofPropertyValuesHolder(imageD, imageD_translate_x, imageD_translate_y, imageD_scale_x, imageD_scale_y);
-		}else{
-			imageDTranslationYAnim =  ObjectAnimator.ofPropertyValuesHolder(imageD, imageD_translate_x, imageD_translate_y);
-		}
-//		imageDScrollAnim.setDuration(duration);
-		imageDTranslationYAnim.setInterpolator(new LinearInterpolator());
-		
-		PropertyValuesHolder imageE_translate_x = PropertyValuesHolder.ofFloat("x",endCoordinateXs[imageE.getIndexLable()]);
-	    PropertyValuesHolder imageE_translate_y = PropertyValuesHolder.ofFloat("y", endCoordinateYs[imageE.getIndexLable()]);
-	   
-		if (imageE.getIndexLable()  == 3) {
-			PropertyValuesHolder imageE_scale_x = PropertyValuesHolder.ofFloat("scaleX",mScaleValue);
-		    PropertyValuesHolder imageE_scale_y = PropertyValuesHolder.ofFloat("scaleY",mScaleValue);
-		    imageETranslationYAnim =  ObjectAnimator.ofPropertyValuesHolder(imageE, imageE_translate_x, imageE_translate_y, imageE_scale_x, imageE_scale_y);
-		}else{
-			imageETranslationYAnim =  ObjectAnimator.ofPropertyValuesHolder(imageE, imageE_translate_x, imageE_translate_y);
-		}
-//		imageEScrollAnim.setDuration(duration);
-		imageETranslationYAnim.setInterpolator(new LinearInterpolator());
-		
-		
-//		layoutAnim = ObjectAnimator.ofFloat(headerLayout, "y",y1);
-//		layoutAnim.setInterpolator(new LinearInterpolator());
-//		menuParentTranslationYAnim = ObjectAnimator.ofFloat(mMenuParentView, "y", mMenuParentBeginY);
-//		menuParentTranslationYAnim.setInterpolator(new LinearInterpolator());
-		
-		layoutFrameTranslationYAnim = ObjectAnimator.ofFloat(mLayoutFrame, "y", layoutFrameBeginY);
-		layoutFrameTranslationYAnim.setInterpolator(new LinearInterpolator());
-		
-		viewPagerTranslationYAnim  = ObjectAnimator.ofFloat(mViewPager, "y", mViewPagerBeginY);
-		viewPagerTranslationYAnim.setInterpolator(new LinearInterpolator());
-		
-		AnimatorSet set = new AnimatorSet();
-		set.setDuration(mDuration);
-		set.playTogether(imageATranslationYAnim, imageBTranslationYAnim, imageCTranslationYAnim, imageDTranslationYAnim, imageETranslationYAnim,layoutFrameTranslationYAnim, viewPagerTranslationYAnim);
-		set.start();
-	}
 }
