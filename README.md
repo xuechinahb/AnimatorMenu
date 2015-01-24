@@ -1,6 +1,6 @@
 # AnimatorMenu
 
-![imag](https://github.com/xuechinahb/AnimatorMenu/tree/master/image/screen_capture.png)
+![imag](https://github.com/xuechinahb/AnimatorMenu/raw/master/image/screen_capture.png)
 
 Author
 ======
