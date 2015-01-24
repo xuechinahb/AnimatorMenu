@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    xmlns:menuLayout="http://schemas.android.com/apk/res/com.clover.menu"
+	>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:background="#f7ab00"
+        android:id="@+id/layout_search"
+         >
+
+        <TextView
+            android:id="@+id/city"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableRight="@drawable/pull_down_icon"
+            android:gravity="center"
+            android:text="Beijing "
+            android:drawablePadding="4dp"
+            android:textSize="17sp"
+            android:textColor="@color/white" />
+
+
+            <EditText
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:id="@+id/searchBtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/search_box_bg"
+                android:drawableLeft="@drawable/search_icon"
+                android:drawablePadding="8dp"
+                android:maxLines="1"
+                android:minLines="1"
+                android:singleLine="true" 
+                android:editable="false"
+                android:gravity="center_vertical"
+                android:minHeight="30dp"
+                android:textSize="13.5sp"
+                android:textColorHint="@color/white"
+                android:textColor="@color/white"
+                android:hint="input location">
+            </EditText>
+    </LinearLayout>
+
+ <ListView
+     	android:layout_below="@id/layout_search"
+        android:id="@+id/listview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:cacheColorHint="@android:color/transparent"
+        android:scrollbars="none"
+        android:background="@android:color/white" />
+   
+	
+		<RelativeLayout 
+		    android:id="@+id/layout_frame"
+		    android:layout_below="@id/layout_search"
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:orientation="vertical"
+		    >
+            <View 
+                android:id="@+id/blank_view"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:background="#f7ab00"
+                />
+             <View 
+               android:layout_below="@id/blank_view"
+               android:id="@+id/blank_color_view"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:background="@android:color/white"
+                />
+      <RelativeLayout
+          android:layout_below="@id/blank_view"
+            android:layout_width="fill_parent"
+            android:layout_height="200dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="@dimen/icon_margin"
+            android:layout_marginRight="@dimen/icon_margin"
+            android:clipChildren="false"
+            android:id="@+id/layout_menu"
+            android:background="@android:color/transparent"
+            android:clipToPadding="false" >
+
+          <com.clover.menu.view.MenuLayout
+               android:id="@+id/img_a"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              menuLayout:indexLable="0"
+              menuLayout:imageBackground="@drawable/image_a"
+              menuLayout:imageContent="@drawable/image_a_content"
+              android:layout_centerHorizontal="true"
+              />
+           <com.clover.menu.view.MenuLayout
+               android:id="@+id/img_b"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              menuLayout:indexLable="4"
+              menuLayout:imageBackground="@drawable/image_b"
+              menuLayout:imageContent="@drawable/image_b_content"
+              android:layout_centerHorizontal="true"
+              />
+
+              <com.clover.menu.view.MenuLayout
+               android:id="@+id/img_c"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              menuLayout:indexLable="3"
+              menuLayout:imageBackground="@drawable/image_c"
+              menuLayout:imageContent="@drawable/image_c_content"
+              android:layout_centerHorizontal="true"
+              />
+           
+               <com.clover.menu.view.MenuLayout
+               android:id="@+id/img_d"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              menuLayout:indexLable="2"
+              menuLayout:imageBackground="@drawable/image_d"
+              menuLayout:imageContent="@drawable/image_d_content"
+              android:layout_centerHorizontal="true"
+              />
+               
+                <com.clover.menu.view.MenuLayout
+               android:id="@+id/img_e"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              menuLayout:indexLable="1"
+              menuLayout:imageBackground="@drawable/image_e"
+              menuLayout:imageContent="@drawable/image_e_content"
+              android:layout_centerHorizontal="true"
+              />
+        </RelativeLayout>
+        
+       <com.clover.menu.view.ViewPagerAD
+             android:layout_marginTop="0dp"
+             android:layout_below="@id/layout_menu"
+    android:id="@+id/viewPager"
+    android:layout_width="match_parent"
+    android:layout_height="100dp"
+    />
+</RelativeLayout>        
+       <com.clover.menu.view.CenterImageView
+           	android:layout_below="@id/layout_search"
+			 android:id="@+id/circle"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:background="@drawable/center_image_bg"
+             android:layout_centerHorizontal="true"
+             />   
+    
+       
+</RelativeLayout>

@@ -1,0 +1,12 @@
+<resources>
+
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="header_height">390dp</dimen>
+    <dimen name="icon_margin">15dp</dimen>
+    <dimen name="menu_textsize">12sp</dimen>
+    <dimen name="ad_offsety">12dp</dimen>
+    <dimen name="blank_view_height">80dp</dimen>
+    <dimen name="ad_height">120dp</dimen>
+
+</resources>

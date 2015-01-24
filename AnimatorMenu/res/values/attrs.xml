@@ -1,0 +1,14 @@
+<resources>
+
+     <declare-styleable name="menuLayout">  
+        <attr name="indexLable" format="integer" />  
+       <!--  <attr name="imageRes" format="integer" />   -->
+        <attr name="imageBackground" format="reference" />  
+        <attr name="imageContent" format="reference" />
+        <attr name="textSize" format="dimension" />
+        <attr name="text" format="string" />
+    </declare-styleable>  
+      <declare-styleable name="centerImageView">  
+        <attr name="indexTag" format="integer" />  
+    </declare-styleable>  
+</resources>
