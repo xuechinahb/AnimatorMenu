@@ -84,6 +84,9 @@ public class MenuLayout extends LinearLayout {
 	public boolean onTouchEvent(MotionEvent event) {
 		return false; 
 	}
+	public TextView getTextView() {
+		return textView;
+	}
 	
 	
 	
