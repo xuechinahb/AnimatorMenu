@@ -2,9 +2,12 @@
 
 ![imag](https://github.com/xuechinahb/AnimatorMenu/raw/master/image/preview.gif)
 
+
 Notice
 ======
+
 Test resolution is 480X800px.
+
 Preview image is captured by android emulator, so it looks not smooth.
 
 
