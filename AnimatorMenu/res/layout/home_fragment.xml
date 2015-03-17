@@ -54,6 +54,7 @@
         android:layout_height="match_parent"
         android:cacheColorHint="@android:color/transparent"
         android:scrollbars="none"
+        android:listSelector="@android:color/transparent"
         android:background="@android:color/white" />
    
 	

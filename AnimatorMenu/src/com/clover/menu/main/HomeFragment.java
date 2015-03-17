@@ -166,6 +166,7 @@ public class HomeFragment extends Fragment implements OnClickListener{
 	}
 	
 	private ObjectAnimator imageCircleAnim;
+	private boolean mSrollStopFlag;
 	
 	private void initView(View view) {
 		
@@ -271,7 +272,7 @@ public class HomeFragment extends Fragment implements OnClickListener{
 
 			@Override
 			public void onScrollStateChanged(AbsListView view, int scrollState) {
-				
+				mSrollStopFlag = false;
 				if (scrollState == SCROLL_STATE_TOUCH_SCROLL) {
 					touchScrollFlag = true;
 				}
@@ -280,11 +281,16 @@ public class HomeFragment extends Fragment implements OnClickListener{
 				}
 				
 				if (scrollState == SCROLL_STATE_IDLE) {
+					System.out.println("scrolling stopped...");
+					mSrollStopFlag = true;
 					float scrollHeight = getScrollY();
-					if (scrollHeight >= mListView.getChildAt(0).getHeight() - imageA.getHeight()) {
+//					if (scrollHeight >= mListView.getChildAt(0).getHeight() - imageA.getHeight()) {
+//						return;
+//					}
+					if (scrollHeight >= mListView.getChildAt(0).getHeight() - listScrollOffset) {
+						mExpandFlag = false;
 						return;
 					}
-					
 					
 					int tempHeight =  (int) ((mViewPagerBeginY - mViewPagerEndY )/ 2);
 					if (scrollHeight < tempHeight) {//distance of scroll up is small, revert previous location, menus is expanded.
@@ -297,6 +303,7 @@ public class HomeFragment extends Fragment implements OnClickListener{
 							}
 						}, 50);
 					}else {//menu collapses
+						
 						mExpandFlag = false;
 						mListView.postDelayed(new Runnable() {
 							
@@ -383,6 +390,9 @@ public class HomeFragment extends Fragment implements OnClickListener{
 								}
 								
 							}else if(event.getY() - lastY  > 15){ // move down
+								if(mExpandFlag && mSrollStopFlag) moveHorizontalFlag = true;//will call updateMoveRightAnim(...) or updateMoveLeftAnim(...)
+								else moveHorizontalFlag = false;
+								
 								if (!moveVerticalFlag) {
 									moveVerticalFlag = true;
 									moveFlag  = true;
