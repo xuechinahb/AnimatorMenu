@@ -166,7 +166,7 @@ public class HomeFragment extends Fragment implements OnClickListener{
 	}
 	
 	private ObjectAnimator imageCircleAnim;
-	private boolean mSrollStopFlag;
+	private boolean mSrollStopFlag = true;
 	
 	private void initView(View view) {
 		
