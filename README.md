@@ -6,9 +6,8 @@
 Notice
 ======
 
-Test resolution is 480X800px.
+Resolution is 480X800px.
 
-Preview image is captured by android emulator, so it looks not smooth.
 
 
 Author
