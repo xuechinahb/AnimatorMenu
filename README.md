@@ -7,7 +7,8 @@ Notice
 ======
 
 Resolution is 480X800px.
-
+The real device is smoother than the simulator.
+If your SDK is under 3.0, consider [NineOldAndroids](https://github.com/JakeWharton/NineOldAndroids) instead.
 
 
 Author
